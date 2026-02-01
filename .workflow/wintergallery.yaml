@@ -1,0 +1,47 @@
+name: Deploy to Private EC2 (Apache)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::265392596092:role/GitHubActionsRole
+          aws-region: us-east-1
+
+      - name: Fetch SSH key from AWS Secrets Manager
+        run: |
+          aws secretsmanager get-secret-value \
+            --secret-id ${{ secrets.SSH_SECRET_NAME }} \
+            --query SecretString \
+            --output text > ssh_key.pem
+          chmod 600 ssh_key.pem
+
+      - name: Copy website files to Bastion
+        run: |
+          rsync -avz \
+            -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" \
+            devops/workflow/winter_gallery/ \
+            ec2-user@${{ secrets.BASTION_HOST }}:/tmp/winter_gallery/
+
+      - name: Deploy from Bastion to Private EC2
+        run: |
+          ssh -i ssh_key.pem \
+          -o StrictHostKeyChecking=no \
+          ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
+            rsync -avz /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
+            sudo systemctl restart httpd
+          EOF
