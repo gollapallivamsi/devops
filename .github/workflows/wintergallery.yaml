@@ -44,7 +44,7 @@ jobs:
 
       - name: Deploy from Bastion to Private EC2
         run: |
-          ssh -i /home/ec2-user/web-ser.pem\
+          ssh -i /home/ec2-user/web-ser.pem \
           -o StrictHostKeyChecking=no \
           ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
             rsync -avz /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
