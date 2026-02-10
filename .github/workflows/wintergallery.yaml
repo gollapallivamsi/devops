@@ -1,6 +1,13 @@
+name: Deploy to Private EC2 (Apache)
+
+on:
+  push:
+    branches: [ main ]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     permissions:
       id-token: write
       contents: read
@@ -15,11 +22,6 @@ jobs:
           role-to-assume: arn:aws:iam::265392596092:role/GitHubActionsRole
           aws-region: us-east-1
 
-      - name: Verify AWS permissions
-        run: |
-          aws sts get-caller-identity
-          aws secretsmanager describe-secret --secret-id ${{ secrets.SSH_SECRET_NAME }}
-
       - name: Fetch SSH key from AWS Secrets Manager
         run: |
           aws secretsmanager get-secret-value \
@@ -27,3 +29,18 @@ jobs:
             --query SecretString \
             --output text > ssh_key.pem
           chmod 600 ssh_key.pem
+
+      - name: Copy website files to Bastion
+        run: |
+          rsync -avz \
+            -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" \
+            devops/workflow/ \
+            ec2-user@${{ secrets.BASTION_HOST }}:/tmp/winter_gallery/
+
+      - name: Deploy from Bastion to Private EC2
+        run: |
+          ssh -i ssh_key.pem \
+          -o StrictHostKeyChecking=no \
+          ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
+            rsync -avz /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
+            sudo systemctl restart httpd
