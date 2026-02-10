@@ -58,7 +58,7 @@ jobs:
           ssh -i ssh_key.pem \
             -o StrictHostKeyChecking=no \
             ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
-              rsync -avz -e "ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no" \
+              sudo rsync -avz -e "ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no" \
                 /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
               sudo systemctl restart httpd
           EOF
