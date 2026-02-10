@@ -39,7 +39,7 @@ jobs:
         run: |
           rsync -avz \
             -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" \
-            ${{ github.workspace }}/.github/workflow/winter_gallery/ \
+            ${{ github.workspace }}/.github/workflows/winter_gallery/ \
             ec2-user@${{ secrets.BASTION_HOST }}:/tmp/winter_gallery/
 
       - name: Deploy from Bastion to Private EC2
