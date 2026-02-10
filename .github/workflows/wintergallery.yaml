@@ -51,16 +51,16 @@ jobs:
         run: |
           scp -i ssh_key.pem -o StrictHostKeyChecking=no ssh_key.pem ec2-user@${{ secrets.BASTION_HOST }}:/home/ec2-user/ssh_key.pem
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_HOST }} "chmod 600 /home/ec2-user/ssh_key.pem"
-          
-          - name: Deploy from Bastion to Private EC2
-            run: |
-            ssh -i ssh_key.pem \
-            -o StrictHostKeyChecking=no \
-            ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
-            # Ensure staging directory exists on private EC2
-            ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PRIVATE_EC2_IP }} "mkdir -p /tmp/winter_gallery"
+      
+      - name: Deploy from Bastion to Private EC2
+        run: |
+          ssh -i ssh_key.pem \
+          -o StrictHostKeyChecking=no \
+          ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
+          # Ensure staging directory exists on private EC2
+          ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PRIVATE_EC2_IP }} "mkdir -p /tmp/winter_gallery"
 
-           # Copy files from bastion /tmp/winter_gallery into private EC2 /tmp/winter_gallery
+          # Copy files from bastion /tmp/winter_gallery into private EC2 /tmp/winter_gallery
           rsync -avz -e "ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no" \
           /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/tmp/winter_gallery/
 
