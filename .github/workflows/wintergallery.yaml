@@ -49,3 +49,4 @@ jobs:
           ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
             rsync -avz /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
             sudo systemctl restart httpd
+            EOF 
