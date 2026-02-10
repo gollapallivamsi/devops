@@ -51,13 +51,14 @@ jobs:
         run: |
           scp -i ssh_key.pem -o StrictHostKeyChecking=no ssh_key.pem ec2-user@${{ secrets.BASTION_HOST }}:/home/ec2-user/ssh_key.pem
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_HOST }} "chmod 600 /home/ec2-user/ssh_key.pem"
-
+          
 
       - name: Deploy from Bastion to Private EC2
         run: | 
           ssh -i ssh_key.pem \
             -o StrictHostKeyChecking=no \
             ec2-user@${{ secrets.BASTION_HOST }} << 'EOF'
-              rsync -avz /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
+              rsync -avz -e "ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no" \
+                /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/var/www/html/
               sudo systemctl restart httpd
           EOF
