@@ -38,7 +38,7 @@ jobs:
         run: |
           rsync -avz \
             -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" \
-            ${{ github.workspace }}/.github/workflows/winter_gallery/ \
+            ${{ github.workspace }}/.github/workflows/winter_gallery/* \
             ec2-user@${{ secrets.BASTION_HOST }}:/tmp/winter_gallery/
     
       - name: Validate SSH key
@@ -62,11 +62,11 @@ jobs:
   
           # Copy files into private EC2 /tmp
           rsync -avz -e "ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no" \
-          /tmp/winter_gallery/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/tmp/winter_gallery/
+          /tmp/winter_gallery/* ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/tmp/winter_gallery/
 
           # On private EC2: move files into /var/www/html with sudo
           ssh -i /home/ec2-user/ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PRIVATE_EC2_IP }} << 'INNER'
-          sudo rsync -avz /tmp/winter_gallery/ /var/www/html/
+          sudo rsync -avz /tmp/winter_gallery/* /var/www/html/
           sudo systemctl restart httpd
           INNER
           EOF
