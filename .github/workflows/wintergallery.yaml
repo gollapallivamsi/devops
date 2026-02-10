@@ -47,6 +47,11 @@ jobs:
           file ssh_key.pem
           ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_HOST }} "echo Connected successfully"
 
+      - name: Copy SSH key to Bastion
+        run: |
+          scp -i ssh_key.pem -o StrictHostKeyChecking=no ssh_key.pem ec2-user@${{ secrets.BASTION_HOST }}:/home/ec2-user/ssh_key.pem
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_HOST }} "chmod 600 /home/ec2-user/ssh_key.pem"
+
 
       - name: Deploy from Bastion to Private EC2
         run: | 
