@@ -40,6 +40,13 @@ jobs:
             -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" \
             ${{ github.workspace }}/.github/workflows/winter_gallery/ \
             ec2-user@${{ secrets.BASTION_HOST }}:/tmp/winter_gallery/
+    
+      - name: Validate SSH key
+        run: |
+          head -5 ssh_key.pem
+          file ssh_key.pem
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.BASTION_HOST }} "echo Connected successfully"
+
 
       - name: Deploy from Bastion to Private EC2
         run: | 
